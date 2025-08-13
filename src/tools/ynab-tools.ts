@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { YNABService } from '../services/ynab-service.js';
 import { Props } from "../types";
 import { z } from "zod";
+import * as ynab from 'ynab';
 
 /**
  * Register YNAB tools with the MCP server
@@ -62,9 +63,9 @@ export function registerYNABTools(server: McpServer, env: Env, props: Props) {
       category_id: z.string().optional().describe('ID of the category (optional for transfer transactions)'),
       memo: z.string().optional().describe('Transaction memo/note'),
       date: z.string().optional().describe('Transaction date in YYYY-MM-DD format (defaults to today)'),
-      cleared: z.enum(['cleared', 'uncleared', 'reconciled']).optional().describe('Transaction cleared status'),
+      cleared: z.nativeEnum(ynab.TransactionDetail.ClearedEnum).optional().describe('Transaction cleared status'),
       approved: z.boolean().optional().describe('Whether the transaction is approved'),
-      flag_color: z.enum(['red', 'orange', 'yellow', 'green', 'blue', 'purple']).optional().describe('Flag color for the transaction')
+      flag_color: z.nativeEnum(ynab.TransactionDetail.FlagColorEnum).optional().describe('Flag color for the transaction')
     },
     async (args) => {
       try {

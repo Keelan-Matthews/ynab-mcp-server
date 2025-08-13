@@ -1,28 +1,6 @@
-// Re-export YNAB types for convenience
-export type {
-  TransactionDetail,
-  Category,
-  Account,
-  BudgetSummary,
-  Payee,
-  SaveTransaction,
-} from 'ynab';
+import type { TransactionDetail, SaveTransaction } from 'ynab';
 
-// Custom types for our MCP tools
-export interface MCPTool {
-  name: string;
-  description: string;
-  inputSchema: any;
-  handler: (args: any) => Promise<any>;
-}
-
-export interface ToolConfig {
-  name: string;
-  description: string;
-  inputSchema: any;
-  handler: string; // Method name on the service class
-}
-
+// YNAB-specific types for our MCP tools
 export interface TransactionFilters {
   searchText?: string;
   accountId?: string;
@@ -38,7 +16,7 @@ export interface CreateTransactionRequest {
   amount: number;
   memo?: string | null;
   date?: string;
-  cleared?: 'cleared' | 'uncleared' | 'reconciled';
+  cleared?: TransactionDetail.ClearedEnum;
   approved?: boolean;
-  flag_color?: 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | null;
+  flag_color?: TransactionDetail.FlagColorEnum | null;
 }

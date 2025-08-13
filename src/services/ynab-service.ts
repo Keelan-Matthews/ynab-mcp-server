@@ -21,18 +21,18 @@ export class YNABService {
 
       // Apply filters
       if (searchText) {
-        transactions = transactions.filter(tx => 
+        transactions = transactions.filter((tx: ynab.TransactionDetail) => 
           tx.payee_name?.toLowerCase().includes(searchText.toLowerCase()) ||
           tx.memo?.toLowerCase().includes(searchText.toLowerCase())
         );
       }
       
       if (accountId) {
-        transactions = transactions.filter(tx => tx.account_id === accountId);
+        transactions = transactions.filter((tx: ynab.TransactionDetail) => tx.account_id === accountId);
       }
       
       if (categoryId) {
-        transactions = transactions.filter(tx => tx.category_id === categoryId);
+        transactions = transactions.filter((tx: ynab.TransactionDetail) => tx.category_id === categoryId);
       }
 
       // Get enrichment data
@@ -41,17 +41,17 @@ export class YNABService {
         this.api.categories.getCategories(this.budgetId)
       ]);
 
-      const accounts = new Map(accountsResult.data.accounts.map(acc => [acc.id, acc]));
+      const accounts = new Map(accountsResult.data.accounts.map((acc: ynab.Account) => [acc.id, acc]));
       const categories = new Map(
         categoriesResult.data.category_groups
-          .flatMap(group => group.categories)
-          .map(cat => [cat.id, cat])
+          .flatMap((group: ynab.CategoryGroupWithCategories) => group.categories)
+          .map((cat: ynab.Category) => [cat.id, cat])
       );
 
       // Enrich and format transactions
       const enrichedTransactions = transactions
         .slice(0, limit)
-        .map(tx => ({
+        .map((tx: ynab.TransactionDetail) => ({
           id: tx.id,
           date: tx.date,
           amount: milliUnitsToUnits(tx.amount),
@@ -86,18 +86,16 @@ export class YNABService {
   async createTransaction(request: CreateTransactionRequest) {
     try {
       // Convert amount to milliunits and format date
-      const transactionData = {
+      const transactionData: ynab.SaveTransaction = {
         account_id: request.account_id,
         category_id: request.category_id || null,
         payee_name: sanitizeString(request.payee_name) || null,
         amount: unitsToMilliUnits(request.amount),
         memo: sanitizeString(request.memo) || null,
         date: formatDateForYnab(request.date),
-        cleared: request.cleared === 'cleared' ? ynab.TransactionDetail.ClearedEnum.Cleared :
-                request.cleared === 'reconciled' ? ynab.TransactionDetail.ClearedEnum.Reconciled :
-                ynab.TransactionDetail.ClearedEnum.Uncleared,
+        cleared: request.cleared || ynab.TransactionDetail.ClearedEnum.Uncleared,
         approved: request.approved !== undefined ? request.approved : true,
-        flag_color: request.flag_color ? ynab.TransactionDetail.FlagColorEnum[request.flag_color.charAt(0).toUpperCase() + request.flag_color.slice(1) as keyof typeof ynab.TransactionDetail.FlagColorEnum] : null
+        flag_color: request.flag_color || null
       };
 
       const result = await this.api.transactions.createTransaction(this.budgetId, {
@@ -116,11 +114,11 @@ export class YNABService {
         this.api.categories.getCategories(this.budgetId)
       ]);
 
-      const accounts = new Map(accountsResult.data.accounts.map(acc => [acc.id, acc]));
+      const accounts = new Map(accountsResult.data.accounts.map((acc: ynab.Account) => [acc.id, acc]));
       const categories = new Map(
         categoriesResult.data.category_groups
-          .flatMap(group => group.categories)
-          .map(cat => [cat.id, cat])
+          .flatMap((group: ynab.CategoryGroupWithCategories) => group.categories)
+          .map((cat: ynab.Category) => [cat.id, cat])
       );
 
       return {
@@ -155,15 +153,15 @@ export class YNABService {
       const result = await this.api.categories.getCategories(this.budgetId);
       
       const categoryGroups = result.data.category_groups
-        .filter(group => includeHidden || !group.deleted)
-        .map(group => ({
+        .filter((group: ynab.CategoryGroupWithCategories) => includeHidden || !group.deleted)
+        .map((group: ynab.CategoryGroupWithCategories) => ({
           id: group.id,
           name: group.name,
           hidden: group.hidden,
           deleted: group.deleted,
           categories: group.categories
-            .filter(cat => includeHidden || !cat.deleted)
-            .map(cat => ({
+            .filter((cat: ynab.Category) => includeHidden || !cat.deleted)
+            .map((cat: ynab.Category) => ({
               id: cat.id,
               name: cat.name,
               budgeted: milliUnitsToUnits(cat.budgeted),
@@ -190,8 +188,8 @@ export class YNABService {
       const result = await this.api.accounts.getAccounts(this.budgetId);
       
       const accounts = result.data.accounts
-        .filter(account => includeDeleted || !account.deleted)
-        .map(account => ({
+        .filter((account: ynab.Account) => includeDeleted || !account.deleted)
+        .map((account: ynab.Account) => ({
           id: account.id,
           name: account.name,
           type: account.type,
@@ -240,12 +238,12 @@ export class YNABService {
       let payees = result.data.payees;
       
       if (searchText) {
-        payees = payees.filter(payee => 
+        payees = payees.filter((payee: ynab.Payee) => 
           payee.name?.toLowerCase().includes(searchText.toLowerCase())
         );
       }
 
-      const formattedPayees = payees.map(payee => ({
+      const formattedPayees = payees.map((payee: ynab.Payee) => ({
         id: payee.id,
         name: payee.name,
         transfer_account_id: payee.transfer_account_id,
