@@ -1,16 +1,16 @@
-# Cloudflare Remote PostgreSQL Database MCP Server + GitHub OAuth
+# YNAB MCP Server + GitHub OAuth
 
-This is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) server that enables you to **chat with your PostgreSQL database**, deployable as a remote MCP server with GitHub OAuth through Cloudflare. This is production ready MCP.
+This is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) server that enables you to **chat with your YNAB budget**, deployable as a remote MCP server with GitHub OAuth through Cloudflare. This is production ready MCP.
 
 ## Key Features
 
-- **🗄️ Database Integration with Lifespan**: Direct PostgreSQL database connection for all MCP tool calls
+- **� YNAB Integration**: Direct YNAB API connection for budget management
 - **🛠️ Modular, Single Purpose Tools**: Following best practices around MCP tools and their descriptions
-- **🔐 Role-Based Access**: GitHub username-based permissions for database write operations
-- **📊 Schema Discovery**: Automatic table and column information retrieval
-- **🛡️ SQL Injection Protection**: Built-in validation and sanitization
-- **📈 Monitoring**: Optional Sentry integration for production monitoring
+- **🔐 OAuth Security**: GitHub-based authentication for secure access
+- **� Transaction Management**: Create and retrieve transactions with full metadata
+- **� Budget Analysis**: Access accounts, categories, payees, and budget summaries
 - **☁️ Cloud Native**: Powered by [Cloudflare Workers](https://developers.cloudflare.com/workers/) for global scale
+- **📈 Production Ready**: Built-in error handling, logging, and monitoring capabilities
 
 ## Modular Architecture
 
@@ -20,7 +20,7 @@ This MCP server uses a clean, modular architecture that makes it easy to extend 
 - **`registerAllTools()`** - Centralized tool registration system 
 - **Extensible Design** - Add new tools by creating files in `tools/` and registering them
 
-This architecture allows you to easily add new database operations, external API integrations, or any other MCP tools while keeping the codebase organized and maintainable.
+This architecture allows you to easily add new YNAB operations, external API integrations, or any other MCP tools while keeping the codebase organized and maintainable.
 
 ## Transport Protocols
 
@@ -33,18 +33,21 @@ For new implementations, use the `/mcp` endpoint as it provides better performan
 
 ## How It Works
 
-The MCP server provides three main tools for database interaction:
+The MCP server provides six main tools for YNAB interaction:
 
-1. **`listTables`** - Get database schema and table information (all authenticated users)
-2. **`queryDatabase`** - Execute read-only SQL queries (all authenticated users)  
-3. **`executeDatabase`** - Execute write operations like INSERT/UPDATE/DELETE (privileged users only)
+1. **`getTransactions`** - Fetch transactions with filtering options (search, date range, account, category)
+2. **`createTransaction`** - Create new transactions in your YNAB budget
+3. **`getCategories`** - Get all budget categories organized by groups
+4. **`getAccounts`** - Get all accounts in your budget
+5. **`getBudgetSummary`** - Get overall budget information and metadata
+6. **`getPayees`** - Get all payees with optional search filtering
 
-**Authentication Flow**: Users authenticate via GitHub OAuth → Server validates permissions → Tools become available based on user's GitHub username.
+**Authentication Flow**: Users authenticate via GitHub OAuth → Server validates YNAB credentials → Tools become available for budget management.
 
 **Security Model**: 
-- All authenticated GitHub users can read data
-- Only specific GitHub usernames can write/modify data
-- SQL injection protection and query validation built-in
+- GitHub OAuth provides secure authentication
+- YNAB API tokens are stored securely in environment variables
+- All operations respect YNAB's rate limits and security policies
 
 ## Simple Example First
 
@@ -99,11 +102,11 @@ Before running the MCP server, you need to configure several environment variabl
    GITHUB_CLIENT_SECRET=your_github_client_secret
    COOKIE_ENCRYPTION_KEY=your_random_encryption_key
 
-   # Database Connection
-   DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+   # YNAB API Configuration
+   YNAB_API_TOKEN=your_ynab_api_token
+   YNAB_BUDGET_ID=your_ynab_budget_id
 
-   # Optional: Sentry monitoring
-   SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
+   # Environment
    NODE_ENV=development
    ```
 
@@ -112,7 +115,7 @@ Before running the MCP server, you need to configure several environment variabl
 1. **Create a GitHub OAuth App** for local development:
    - Go to [GitHub Developer Settings](https://github.com/settings/developers)
    - Click "New OAuth App"
-   - **Application name**: `MCP Server (Local Development)`
+   - **Application name**: `YNAB MCP Server (Local Development)`
    - **Homepage URL**: `http://localhost:8792`
    - **Authorization callback URL**: `http://localhost:8792/callback`
    - Click "Register application"
@@ -129,21 +132,17 @@ openssl rand -hex 32
 ```
 Copy the output and paste it as `COOKIE_ENCRYPTION_KEY` in `.dev.vars`.
 
-## Database Setup
+## YNAB Setup
 
-1. **Set up PostgreSQL** using a hosted service like:
-   - [Supabase](https://supabase.com/) (recommended for beginners)
-   - [Neon](https://neon.tech/)
-   - Or use local PostgreSQL/Supabase
+1. **Get your YNAB API Token**:
+   - Go to [YNAB Developer Settings](https://app.ynab.com/settings/developer)
+   - Click "New Token"
+   - Copy the token and paste it as `YNAB_API_TOKEN` in `.dev.vars`
 
-2. **Update the DATABASE_URL** in `.dev.vars` with your connection string:
-   ```
-   DATABASE_URL=postgresql://username:password@host:5432/database_name
-   ```
-
-#### Connection String Examples:
-- **Local**: `postgresql://myuser:mypass@localhost:5432/mydb`
-- **Supabase**: `postgresql://postgres:your-password@db.your-project.supabase.co:5432/postgres`
+2. **Get your Budget ID**:
+   - Open your budget in the YNAB web app
+   - Look at the URL: `https://app.ynab.com/{budget-id}/budget`
+   - Copy the `{budget-id}` part and paste it as `YNAB_BUDGET_ID` in `.dev.vars`
 
 ### Database Schema Setup
 
