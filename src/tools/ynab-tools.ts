@@ -58,7 +58,7 @@ export function registerYNABTools(server: McpServer, env: Env, props: Props) {
     "Create a new transaction in YNAB",
     {
       account_id: z.string().describe('ID of the account for the transaction'),
-      amount: z.number().describe('Transaction amount (positive for inflow, negative for outflow)'),
+      amount: z.number().describe('Transaction amount (positive for inflow, negative for outflow) in milliunits (123930 -> R123.93)'),
       payee_name: z.string().optional().describe('Name of the payee'),
       category_id: z.string().optional().describe('ID of the category (optional for transfer transactions)'),
       memo: z.string().optional().describe('Transaction memo/note'),
