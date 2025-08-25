@@ -34,7 +34,8 @@ export function resetGitHubMocks() {
 
 // Mock fetch for GitHub OAuth token exchange
 export function setupGitHubTokenExchange() {
-  global.fetch = vi.fn((url: string) => {
+  // @ts-ignore - test mock assigns to global.fetch
+  global.fetch = vi.fn((url: any) => {
     if (url.includes('github.com/login/oauth/access_token')) {
       return Promise.resolve({
         ok: true,
@@ -46,7 +47,8 @@ export function setupGitHubTokenExchange() {
 }
 
 export function setupGitHubTokenExchangeError() {
-  global.fetch = vi.fn((url: string) => {
+  // @ts-ignore - test mock assigns to global.fetch
+  global.fetch = vi.fn((url: any) => {
     if (url.includes('github.com/login/oauth/access_token')) {
       return Promise.resolve({
         ok: false,

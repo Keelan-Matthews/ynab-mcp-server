@@ -7,6 +7,9 @@ export type Props = {
   name: string;
   email: string;
   accessToken: string;
+  // Optional API key/authorization passed when using machine access
+  apiKey?: string;
+  authorization?: string;
 };
 
 // Extended environment with OAuth provider

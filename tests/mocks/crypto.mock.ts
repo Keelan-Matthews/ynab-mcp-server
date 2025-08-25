@@ -40,6 +40,7 @@ export function resetCryptoMocks() {
 }
 
 // Apply mocks to global crypto object
+// @ts-ignore - test environment polyfill
 if (!global.crypto) {
   Object.defineProperty(global, 'crypto', {
     value: {
@@ -49,6 +50,8 @@ if (!global.crypto) {
     writable: true,
   })
 } else {
+  // @ts-ignore - test environment polyfill assignment
   global.crypto.subtle = mockCryptoSubtle
+  // @ts-ignore - test environment polyfill assignment
   global.crypto.getRandomValues = mockGetRandomValues
 }
