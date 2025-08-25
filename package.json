@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^0.0.5",
+    "@everapi/freecurrencyapi-js": "^1.0.1",
     "@modelcontextprotocol/sdk": "1.13.1",
     "agents": "^0.0.100",
     "hono": "^4.8.3",
