@@ -98,11 +98,12 @@ export function registerYNABTools(server: McpServer, env: Env, props: Props) {
     "getCategories",
     "Get all budget categories organized by category groups",
     {
-      includeHidden: z.boolean().default(false).describe('Include hidden/deleted categories')
+      includeHidden: z.boolean().default(false).describe('Include hidden/deleted categories'),
+      includeDetails: z.boolean().default(false).describe('Include detailed information (budgeted, activity, balance, goals). When false, only returns name and ID')
     },
     async (args) => {
       try {
-        const result = await service.getCategories(args.includeHidden);
+        const result = await service.getCategories(args.includeHidden, args.includeDetails);
         return {
           content: [
             {

@@ -148,31 +148,51 @@ export class YNABService {
     }
   }
 
-  async getCategories(includeHidden = false) {
+  async getCategories(includeHidden = false, includeDetails = false) {
     try {
       const result = await this.api.categories.getCategories(this.budgetId);
       
       const categoryGroups = result.data.category_groups
         .filter((group: ynab.CategoryGroupWithCategories) => includeHidden || !group.deleted)
-        .map((group: ynab.CategoryGroupWithCategories) => ({
-          id: group.id,
-          name: group.name,
-          hidden: group.hidden,
-          deleted: group.deleted,
-          categories: group.categories
-            .filter((cat: ynab.Category) => includeHidden || !cat.deleted)
-            .map((cat: ynab.Category) => ({
-              id: cat.id,
-              name: cat.name,
-              budgeted: milliUnitsToUnits(cat.budgeted),
-              activity: milliUnitsToUnits(cat.activity),
-              balance: milliUnitsToUnits(cat.balance),
-              hidden: cat.hidden,
-              deleted: cat.deleted,
-              goal_type: cat.goal_type,
-              goal_target: cat.goal_target ? milliUnitsToUnits(cat.goal_target) : null
-            }))
-        }));
+        .map((group: ynab.CategoryGroupWithCategories) => {
+          const baseGroup = {
+            id: group.id,
+            name: group.name,
+            categories: group.categories
+              .filter((cat: ynab.Category) => includeHidden || !cat.deleted)
+              .map((cat: ynab.Category) => {
+                const baseCategory = {
+                  id: cat.id,
+                  name: cat.name
+                };
+                
+                if (includeDetails) {
+                  return {
+                    ...baseCategory,
+                    budgeted: milliUnitsToUnits(cat.budgeted),
+                    activity: milliUnitsToUnits(cat.activity),
+                    balance: milliUnitsToUnits(cat.balance),
+                    hidden: cat.hidden,
+                    deleted: cat.deleted,
+                    goal_type: cat.goal_type,
+                    goal_target: cat.goal_target ? milliUnitsToUnits(cat.goal_target) : null
+                  };
+                }
+                
+                return baseCategory;
+              })
+          };
+          
+          if (includeDetails) {
+            return {
+              ...baseGroup,
+              hidden: group.hidden,
+              deleted: group.deleted
+            };
+          }
+          
+          return baseGroup;
+        });
 
       return {
         category_groups: categoryGroups,
